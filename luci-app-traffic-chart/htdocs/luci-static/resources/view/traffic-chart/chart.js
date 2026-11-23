@@ -826,9 +826,12 @@ return view.extend({
 
         var MAX_ROWS = 22;
         // Devices are never folded into an "Other" bucket: the collector caps its device
-        // table at ATTR_MAX_DEVICES (64 by default), so reserve that many slots and every
-        // device the backend knows about gets its own row and donut segment.
-        var MAX_DEVICE_ROWS = 64;
+        // table at ATTR_MAX_DEVICES (`attr_max_devices`, 64 by default), so reserve exactly
+        // that many slots and every device the backend reports gets its own row and donut
+        // segment. 0 means "no limit" in the collector; 256 rows is the hard UI ceiling.
+        var MAX_DEVICE_ROWS = parseInt(uci.get('trafficchart', 'global', 'attr_max_devices'), 10);
+        if (!isFinite(MAX_DEVICE_ROWS) || MAX_DEVICE_ROWS <= 0) MAX_DEVICE_ROWS = 64;
+        MAX_DEVICE_ROWS = Math.max(8, Math.min(MAX_DEVICE_ROWS, 256));
         var appsView = makeSlotView(MAX_ROWS - 1, _('Applications'),
             function(name) { return name; },
             function(n) { return _('Other (%d applications)').format(n); },
