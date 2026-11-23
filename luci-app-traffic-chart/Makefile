@@ -1,7 +1,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_VERSION:=1.2.0
-PKG_RELEASE:=2
+PKG_RELEASE:=3
 PKG_LICENSE:=GPL-2.0-or-later
 PKG_MAINTAINER:=YunHair
 
@@ -14,7 +14,7 @@ LUCI_DESCRIPTION:=Live and historical traffic chart per application, device and 
 	Optional: socat + netifyd for application names.
 # fw4 only: firewall4 pulls in nftables and kmod-nft-core; the nft CLI is used by the SQM
 # classifier. There is no iptables/fw3 dependency left in this package.
-LUCI_DEPENDS:=+luci-base +rpcd +firewall4 +nftables +sqm-scripts +conntrack +jsonfilter +tc +gawk +ip +tcpdump +uclient-fetch +ca-bundle
+LUCI_DEPENDS:=+luci-base +rpcd +firewall4 +nftables +conntrack +jsonfilter +tc-tiny +ip-tiny +gawk +tcpdump +uclient-fetch +ca-bundle
 LUCI_PKGARCH:=all
 
 include $(TOPDIR)/feeds/luci/luci.mk

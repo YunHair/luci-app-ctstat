@@ -14,7 +14,7 @@ OpenWrt LuCI 实时流量图表：按**应用 / 设备 / 目标地址**统计流
 | 主菜单 | `网络 → Traffic Chart`，设置页是隐藏菜单 | **一个顶级菜单 `traffic-chart`**，内含 `Charts`（图表）和 `Settings`（设置）两个子菜单 |
 | 手机显示 | 图例两列、流量表 7 列，手机上拥挤 | 宽度 ≤ 760 px 时**每个项目独占一行**：圆环与图例上下排列、图例单列、标签栏横向滚动、工具栏整行按钮、最繁忙连接改为每条一张卡片 |
 | 翻译 | 无 | 新增简体中文、繁体中文翻译包（`luci-i18n-traffic-chart-zh-cn` / `zh-tw`） |
-| 版本 | 1.1.0-r21 | 1.2.0-r2，架构 `all` |
+| 版本 | 1.1.0-r21 | 1.2.0-r3，架构 `all` |
 
 > 上游代码本身已经用 nftables（`nss-trafficchart.qos` 写 `inet qos_custom` 表），并不存在 iptables 规则生成逻辑。
 > 本 fork 做的是把 fw3 时代的残留（依赖声明、文档表述、安装环境假设）彻底清掉，并从打包层面强制 fw4。
@@ -22,16 +22,20 @@ OpenWrt LuCI 实时流量图表：按**应用 / 设备 / 目标地址**统计流
 ## 运行要求
 
 - OpenWrt **22.03 或更新**（firewall4 / nftables），不支持 firewall3 的 21.02 及更早版本。
-- 依赖：`luci-base`、`rpcd`、`firewall4`、`nftables`、`sqm-scripts`、`conntrack`、`jsonfilter`、
-  `tc`、`gawk`、`ip`、`tcpdump`、`uclient-fetch`、`ca-bundle`。
+- 依赖：`luci-base`、`rpcd`、`firewall4`、`nftables`、`conntrack`、`jsonfilter`、
+  `tc-tiny`、`ip-tiny`、`gawk`、`tcpdump`、`uclient-fetch`、`ca-bundle`。
+  依赖闭包中**不含** `iptables` / `ip6tables` / `libxtables*` / `tc-mod-iptables` / `firewall3`。
+- 可选：`sqm-scripts`。`nss-trafficchart.qos` 分类器随包安装到 `/usr/lib/sqm/`，装了 SQM 后可在
+  SQM 设置里选择它；主程序和图表不依赖 SQM。注意 OpenWrt 23.05 的 `sqm-scripts` 自身依赖
+  `iptables`，纯 fw4 系统若不想引入 iptables，请不要安装 SQM。
 - 可选：`socat` + `netifyd`（带 `[socket] listen_path`）用于应用名称识别；没有时按协议/端口命名。
 
 ## 安装
 
 ```sh
 opkg update
-opkg install luci-app-traffic-chart_1.2.0-r2_all.ipk
-opkg install luci-i18n-traffic-chart-zh-cn_1.2.0-r2_all.ipk   # 中文界面（可选）
+opkg install luci-app-traffic-chart_1.2.0-r3_all.ipk
+opkg install luci-i18n-traffic-chart-zh-cn_1.2.0-r3_all.ipk   # 中文界面（可选）
 ```
 
 安装后 postinst 会启用并启动 `trafficchart` 服务、重载 rpcd；刷新 LuCI 即可看到新菜单。

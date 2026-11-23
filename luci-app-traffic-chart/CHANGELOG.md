@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.2.0-r3
+- **Removed the transitive iptables dependency.** The package hard-depended on `sqm-scripts`,
+  which itself depends on `iptables`, `iptables-mod-ipopt` and `kmod-sched-cake`; the `tc`
+  dependency was resolved to `tc-full`, which pulls `libxtables12` and `tc-mod-iptables`. On a
+  pure fw4 system without iptables this made `opkg install` fail with
+  `satisfy_dependencies_for: ... iptables`.
+  - `sqm-scripts` is no longer a dependency. `nss-trafficchart.qos` is still installed to
+    `/usr/lib/sqm/`; install SQM separately if you want to use it.
+  - `tc` -> `tc-tiny` (no `libxtables12`) and `ip` -> `ip-tiny` (no `libbpf`); both still
+    provide the `tc` / `ip` commands used by the collector.
+- The dependency closure of the package now contains no `iptables`, `ip6tables`, `libxtables*`,
+  `tc-mod-iptables` or `firewall3` package.
+
 ## 1.2.0-r2
 - **Fixed the `.ipk` container format.** The r1 packages were built as Debian `ar` archives, but
   OpenWrt's opkg expects a gzip'ed outer tar (`./debian-binary`, `./data.tar.gz`,

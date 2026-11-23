@@ -13,9 +13,9 @@ Maintainer: YunHair - License: GPL-2.0-or-later
 
 | Package | Version |
 |---|---|
-| [luci-app-traffic-chart](luci-app-traffic-chart/) | 1.2.0-r2 |
-| luci-i18n-traffic-chart-zh-cn | 1.2.0-r2 |
-| luci-i18n-traffic-chart-zh-tw | 1.2.0-r2 |
+| [luci-app-traffic-chart](luci-app-traffic-chart/) | 1.2.0-r3 |
+| luci-i18n-traffic-chart-zh-cn | 1.2.0-r3 |
+| luci-i18n-traffic-chart-zh-tw | 1.2.0-r3 |
 
 Details, settings and troubleshooting: [luci-app-traffic-chart/README.md](luci-app-traffic-chart/README.md),
 changes: [CHANGELOG](luci-app-traffic-chart/CHANGELOG.md).
