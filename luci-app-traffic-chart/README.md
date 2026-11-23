@@ -40,6 +40,10 @@ opkg install luci-i18n-traffic-chart-zh-cn_1.2.0-r3_all.ipk   # 中文界面（�
 
 安装后 postinst 会启用并启动 `trafficchart` 服务、重载 rpcd；刷新 LuCI 即可看到新菜单。
 
+已在 OpenWrt 23.05.5 x86_64 rootfs（内核 5.15.167）中用真实 `opkg` 完整安装验证：opkg 自动拉取的
+10 个额外包为 `conntrack`、`kmod-sched-core`、`tc-tiny`、`ip-tiny`、`terminfo`、`libncurses6`、
+`libreadline8`、`gawk`、`libpcap1`、`tcpdump`，无任何 iptables / xtables / SQM / firewall3 包。
+
 ## 菜单结构
 
 ```
