@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.0-r2
+- **Fixed the `.ipk` container format.** The r1 packages were built as Debian `ar` archives, but
+  OpenWrt's opkg expects a gzip'ed outer tar (`./debian-binary`, `./data.tar.gz`,
+  `./control.tar.gz`), exactly like `scripts/ipkg-build`. On a router this surfaced as
+  `pkg_init_from_file: Malformed package file`. The builder now emits GNU tar + `gzip -n`, and
+  `Installed-Size` is the compressed `data.tar.gz` size, matching upstream `ipkg-build`.
+  Verified end-to-end with the real opkg from OpenWrt 23.05.5 (x86_64 rootfs).
+- No source changes versus 1.2.0-r1.
+
 ## 1.2.0-r1 (YunHair fork)
 - **fw4 only**: removed every legacy firewall3/iptables dependency. The package now hard-depends on
   `firewall4` + `nftables` and the postinstall warns when `/sbin/fw4` is missing. The bundled
