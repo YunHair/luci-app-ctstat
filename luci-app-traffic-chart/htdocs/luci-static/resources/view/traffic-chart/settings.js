@@ -7,6 +7,23 @@
 
 return view.extend({
     render: function() {
+        // Phone layout: keep the storage table usable instead of letting it squeeze the
+        // path input down to a few characters. Every form row (cbi-value) is already
+        // stacked by the theme, only the tables need a scroll container.
+        if (!document.getElementById('trafficchart_settings_style')) {
+            var st = document.createElement('style');
+            st.id = 'trafficchart_settings_style';
+            st.textContent = [
+                '@media (max-width: 760px) {',
+                '  .cbi-section-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }',
+                '  .cbi-section-table .th, .cbi-section-table .td { padding: 8px 6px; }',
+                '  .cbi-section-table .tr.table-titles .th, .cbi-section-table .th { white-space: nowrap; }',
+                '  .cbi-section-table input[type="text"] { min-width: 140px; }',
+                '  .cbi-page-actions .btn { margin-bottom: 6px; }',
+                '}'
+            ].join('\n');
+            document.head.appendChild(st);
+        }
         var m, s, o;
         var domainUpdateNotice = null;
         var domainStatusTimer = null;
@@ -683,6 +700,19 @@ return view.extend({
 
         var rendered = m.render();
         rendered.then(function(node) {
+            // One app, two submenu pages: give the settings page a way back to the charts
+            // without relying on the (on phones collapsed) sidebar.
+            var back = E('div', { class: 'trafficchart-back', style: 'margin: 0 0 14px;' }, [
+                E('a', {
+                    'class': 'btn cbi-button',
+                    href: L.url('admin', 'traffic-chart', 'chart'),
+                    style: 'text-decoration:none;'
+                }, '\u2190 ' + _('Charts'))
+            ]);
+            if (node.firstChild)
+                node.insertBefore(back, node.firstChild);
+            else
+                node.appendChild(back);
             // pollDomainStatus already displays RPC errors in the status field;
             // consume its rejection here to avoid an unhandled Promise rejection.
             pollDomainStatus().catch(function() {});

@@ -156,6 +156,57 @@ return view.extend({
             document.head.appendChild(styleTag);
         }
 
+        // Phone layout: every item gets its own row. The desktop view puts the donut next to
+        // a two-column legend and renders the flow list as a seven-column table; on a narrow
+        // screen that is unreadable, so the legend becomes a single column and each flow is
+        // turned into a small card with one "label: value" line per field.
+        if (!document.getElementById('qos_chart_mobile_style')) {
+            var mobileStyle = document.createElement('style');
+            mobileStyle.id = 'qos_chart_mobile_style';
+            mobileStyle.textContent = [
+                '@media (max-width: 760px) {',
+                '  #qos_container { padding: 12px 10px !important; border-radius: 8px !important; }',
+                '  .qos-panels { flex-direction: column; align-items: stretch; gap: 16px; }',
+                '  .qos-panel { max-width: 100%; }',
+                '  .qos-panel-title { font-size: 14px; }',
+                '  .qos-card { flex-direction: column; align-items: stretch; gap: 4px; }',
+                '  .qos-donut-wrap { margin: 0 auto; max-width: 270px !important; flex: 0 0 auto !important; align-self: center; }',
+                '  .qos-legend-grid { grid-template-columns: 1fr !important; gap: 0 !important; }',
+                '  .qos-legend-row { padding: 6px 2px !important; }',
+                '  .qos-tabs { flex-wrap: nowrap !important; overflow-x: auto; -webkit-overflow-scrolling: touch;' +
+                '    scrollbar-width: none; max-width: 100%; }',
+                '  .qos-tabs::-webkit-scrollbar { display: none; }',
+                '  .qos-tabs > li { flex: 0 0 auto; }',
+                '  .qos-toolbar { flex-direction: column; align-items: stretch !important; gap: 2px !important; }',
+                '  .qos-toolbar-actions { width: 100%; margin-bottom: .7em !important; }',
+                '  .qos-toolbar-actions > .btn, .qos-toolbar-actions > a.btn { flex: 1 1 0; text-align: center; }',
+                '  .qos-shaper-box { height: auto !important; min-height: 0 !important; max-height: none !important; }',
+                '  .qos-shaper-line { white-space: normal !important; height: auto !important; min-height: 18px !important;' +
+                '    max-height: none !important; flex-wrap: wrap !important; line-height: 1.5; }',
+                '  .qos-shaper-line svg { display: none !important; }',
+                '  .qos-hint { margin: 24px 2px 0 !important; }',
+                '  .qos-hist-controls { flex-direction: column; gap: 6px !important; align-items: stretch !important; }',
+                '  .qos-hist-controls > div { width: 100%; }',
+                '  #qos_flows_table { table-layout: auto !important; width: 100% !important; }',
+                '  #qos_flows_table colgroup, #qos_flows_table tr.table-titles { display: none !important; }',
+                '  #qos_flows_table, #qos_flows_table tbody, #qos_flows_table tr, #qos_flows_table td { display: block; width: auto !important; }',
+                '  #qos_flows_table tr.tr { border: 1px solid rgba(128,128,128,.22); border-radius: 10px;' +
+                '    padding: 8px 10px; margin: 0 0 8px; background: rgba(0,0,0,.015); }',
+                '  #qos_flows_table td.td { display: flex; justify-content: space-between; align-items: baseline;' +
+                '    gap: 12px; padding: 2px 0 !important; text-align: right !important; white-space: normal !important;' +
+                '    overflow: visible !important; text-overflow: clip !important; font-size: 12px;' +
+                '    overflow-wrap: anywhere; word-break: break-word; }',
+                '  #qos_flows_table td.td::before { content: attr(data-label); color: var(--qos-text-muted);' +
+                '    font-weight: 600; flex: 0 0 auto; text-align: left; font-size: 11px; }',
+                '}',
+                '@media (max-width: 420px) {',
+                '  .qos-donut-wrap { max-width: 215px; }',
+                '  #qos_container { padding: 10px 8px !important; }',
+                '}'
+            ].join('\n');
+            document.head.appendChild(mobileStyle);
+        }
+
         // no animation for the first draw of a tab: its views were not updated while hidden, so the
         // transition would run from stale values to the current ones and look like a jump
         var ntOld = document.getElementById('qos_notrans_style');
@@ -415,6 +466,7 @@ return view.extend({
             }
 
             var legendGrid = E('div', {
+                class: 'qos-legend-grid',
                 style: 'display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:0 32px; align-content:start;'
             }, legendChildren);
 
@@ -717,18 +769,21 @@ return view.extend({
             v.el = E('div', { style: 'width:100%; display:none;' }, [
                 E('div', { class: 'qos-panel-title', style: 'text-align:center;' }, _('Busiest flows (smoothed rate, top 25)')),
                 table ]);
-            function makeBarCell(color) {
+            function makeBarCell(color, label) {
                 var bar = E('div', { style: 'position:absolute; right:0; top:2px; bottom:2px; width:0%; background:' + color + '; border-radius:4px; z-index:0; transition:width 0.4s ease; pointer-events:none;' });
                 var text = E('span', { style: 'position:relative; z-index:1;' });
-                return { cell: E('td', { class: 'td', style: num + ' position:relative; padding-right:8px;' }, [ bar, text ]), bar: bar, text: text };
+                return { cell: E('td', { class: 'td', 'data-label': label, style: num + ' position:relative; padding-right:8px;' }, [ bar, text ]), bar: bar, text: text };
             }
             function makeFlowRow() {
-                var down = makeBarCell('rgba(110, 231, 183, 0.22)');
-                var up = makeBarCell('rgba(147, 197, 253, 0.22)');
+                var down = makeBarCell('rgba(110, 231, 183, 0.22)', _('Download'));
+                var up = makeBarCell('rgba(147, 197, 253, 0.22)', _('Upload'));
                 var cells = [
-                    E('td', { class: 'td', style: trunc }), E('td', { class: 'td', style: trunc }),
-                    E('td', { class: 'td', style: trunc }), E('td', { class: 'td', style: trunc }),
-                    down.cell, up.cell, E('td', { class: 'td', style: num + ' ' + trunc })
+                    E('td', { class: 'td', 'data-label': _('Device'), style: trunc }),
+                    E('td', { class: 'td', 'data-label': _('Application'), style: trunc }),
+                    E('td', { class: 'td', 'data-label': _('Destination'), style: trunc }),
+                    E('td', { class: 'td', 'data-label': _('Port'), style: trunc }),
+                    down.cell, up.cell,
+                    E('td', { class: 'td', 'data-label': _('Volume'), style: num + ' ' + trunc })
                 ];
                 var row = { el: E('tr', { class: 'tr' }, cells), cells: cells, down: down, up: up };
                 table.appendChild(row.el);
@@ -928,7 +983,7 @@ return view.extend({
             });
 
             v.el = E('div', { style: 'width:100%; display:none;' }, [
-                E('div', { style: 'display:flex; gap:24px; flex-wrap:wrap; justify-content:center; align-items:center; margin-bottom:10px;' }, [
+                E('div', { class: 'qos-hist-controls', style: 'display:flex; gap:24px; flex-wrap:wrap; justify-content:center; align-items:center; margin-bottom:10px;' }, [
                     E('div', {}, rangeBtns), E('div', {}, dimBtns), E('div', {}, dirBtns.concat([ cmpBtn ])), resetBtn ]),
                 chartHost, persistEl ]);
 
@@ -1947,7 +2002,7 @@ return view.extend({
         var flowsView = makeFlowsView();
         var histView = makeHistoryView();
 
-        var shaperEl = E('div', { style: 'font-size:11.5px; color:var(--qos-text-strong); margin:0 0 12px; line-height:18px; font-variant-numeric: tabular-nums; height:40px; min-height:40px; max-height:40px; box-sizing:border-box; overflow:hidden;' });
+        var shaperEl = E('div', { class: 'qos-shaper-box', style: 'font-size:11.5px; color:var(--qos-text-strong); margin:0 0 12px; line-height:18px; font-variant-numeric: tabular-nums; height:40px; min-height:40px; max-height:40px; box-sizing:border-box; overflow:hidden;' });
 
         // Per-WAN breakdown: the main link line above sums all shaped WAN devices into one rate and
         // one configured-rate figure, which hides very asymmetric multi-WAN setups. data.wan has one
@@ -2135,6 +2190,7 @@ return view.extend({
                 if (rest.length) lineChildren.push(rest.join(' \u00b7 '));
 
                 var lineEl = E('div', {
+                    class: 'qos-shaper-line',
                     style: 'display:flex; align-items:center; flex-wrap:nowrap; gap:5px; margin-bottom:2px; height:18px; min-height:18px; max-height:18px; overflow:hidden; white-space:nowrap;',
                     title: _('Drops are normal codel behaviour under load. "Limit hits" > 0 mean the queue limit was exceeded (limit too small for the link speed).')
                 }, lineChildren);
@@ -2237,7 +2293,7 @@ return view.extend({
         var disabledEl = E('div', { style: 'display:none; text-align:center; margin:10px 0;' }, [
             E('div', {}, _('The Traffic Chart service is disabled in the settings, so no data is collected.')),
             canRestart ? E('a', {
-                href: L.url('admin', 'network', 'traffic_chart_settings'),
+                href: L.url('admin', 'traffic-chart', 'settings'),
                 'class': 'btn cbi-button cbi-button-apply',
                 style: 'margin-top:8px; display:inline-block; text-decoration:none;'
             }, _('Open settings to enable it')) : '' ]);
@@ -2307,7 +2363,7 @@ return view.extend({
                 tabBtns.push(E('li', {}, a));
             });
             selectTab(0);
-            var tabs = E('ul', { class: 'cbi-tabmenu', style: 'flex:1 1 auto;' }, tabBtns);
+            var tabs = E('ul', { class: 'cbi-tabmenu qos-tabs', style: 'flex:1 1 auto;' }, tabBtns);
             var btnJson = E('button', { type: 'button', class: 'btn cbi-button', id: 'qos_export_json' }, _('Export JSON'));
             var btnCsv = E('button', { type: 'button', class: 'btn cbi-button', id: 'qos_export_csv' }, _('Export CSV'));
             btnJson.addEventListener('click', function(e) { e.stopPropagation(); if (histView.active) histView.exportJson(); else exportJson(); });
@@ -2317,17 +2373,18 @@ return view.extend({
             var toolbarBtns = [ btnJson, btnCsv ];
             if (canRestart)
                 toolbarBtns.push(E('a', {
-                    href: L.url('admin', 'network', 'traffic_chart_settings'),
+                    href: L.url('admin', 'traffic-chart', 'settings'),
                     'class': 'btn cbi-button', id: 'qos_settings_link',
                     style: 'text-decoration:none;', title: _('Settings'), 'aria-label': _('Settings')
-                }, '\u2699'));
-            var toolbar = E('div', { style: 'display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap;' }, [
-                tabs, E('div', { style: 'display:flex; gap:6px; margin-bottom:1em;' }, toolbarBtns) ]);
+                }, '\u2699 ' + _('Settings')));
+            var toolbar = E('div', { class: 'qos-toolbar', style: 'display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap;' }, [
+                tabs, E('div', { class: 'qos-toolbar-actions', style: 'display:flex; gap:6px; margin-bottom:1em;' }, toolbarBtns) ]);
 
             var hintText = _('* Note: rates are the mean of the last %d s, measured by the trafficchart-agg daemon on its own clock (bytes per application, device and destination from /proc/net/nf_conntrack, application names from netifyd). The link rate comes from the tc qdisc counters read in the same instant. "Not attributed" is what the shaper carries but conntrack does not count (after subtracting the link layer header): e.g. traffic to router services, dropped inbound packets, multicast.').format((data && data.rate && data.rate.win) || 0);
             if (data && data.backend === 'nss')
                 hintText += ' ' + _('NSS hardware offload bypasses nftables for accelerated flows; conntrack byte counters keep advancing under offload, which is why they are used.');
             var hintEl = E('div', {
+                class: 'qos-hint',
                 style: 'margin-top: 40px; margin-left: 40px; margin-right: 40px; font-size: 11px; color: var(--qos-text-muted);'
             }, hintText);
 

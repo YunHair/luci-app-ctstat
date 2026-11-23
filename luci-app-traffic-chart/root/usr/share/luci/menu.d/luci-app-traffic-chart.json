@@ -1,9 +1,9 @@
 {
-    "admin/network/traffic_chart": {
-        "title": "Traffic Chart",
+    "admin/traffic-chart": {
+        "title": "traffic-chart",
+        "order": 55,
         "action": {
-            "type": "view",
-            "path": "network/traffic_chart"
+            "type": "firstchild"
         },
         "depends": {
             "acl": [
@@ -11,10 +11,25 @@
             ]
         }
     },
-    "admin/network/traffic_chart_settings": {
+    "admin/traffic-chart/chart": {
+        "title": "Charts",
+        "order": 10,
         "action": {
             "type": "view",
-            "path": "network/trafficchart_config"
+            "path": "traffic-chart/chart"
+        },
+        "depends": {
+            "acl": [
+                "luci-app-traffic-chart"
+            ]
+        }
+    },
+    "admin/traffic-chart/settings": {
+        "title": "Settings",
+        "order": 20,
+        "action": {
+            "type": "view",
+            "path": "traffic-chart/settings"
         },
         "depends": {
             "acl": [

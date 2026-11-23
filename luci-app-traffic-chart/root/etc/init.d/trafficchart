@@ -42,6 +42,15 @@ TC_DEFAULTS
 start_service() {
     local enabled apps dns_names netify_sock
     tc_ensure_config
+
+    # fw4 only. The chart itself reads conntrack and tc counters, but the bundled
+    # nss-trafficchart.qos classifier writes an nftables table, and the package
+    # explicitly does not support firewall3/iptables systems. Say so once instead
+    # of failing later in SQM with a less obvious error.
+    if ! command -v nft >/dev/null 2>&1; then
+        logger -t trafficchart "warning: nft not found - install the nftables package; firewall3/iptables is not supported"
+    fi
+
     config_load trafficchart
     config_get_bool enabled global enabled 1
     config_get_bool apps global apps 1
