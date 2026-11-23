@@ -5,6 +5,53 @@
 'require ui';
 'require uci';
 
+// v2fly ships its categories as `category-*`. Map the common ones to readable
+// labels; anything unknown falls back to a title-cased name. "category-porn" is
+// deliberately labelled "Adult content" instead of the blunter literal word.
+function v2flyGroupLabel(group) {
+    switch (group) {
+    case 'category-ads': return _('Advertising');
+    case 'category-ads-all': return _('Advertising (all lists)');
+    case 'category-ai-chat-!cn': return _('AI chat (outside China)');
+    case 'category-crypto': return _('Cryptocurrency');
+    case 'category-games': return _('Games');
+    case 'category-media': return _('Media');
+    case 'category-porn': return _('Adult content');
+    case 'category-scholar': return _('Scholar');
+    case 'category-social': return _('Social');
+    case 'category-speedtest': return _('Speed test');
+    default:
+        return group.replace(/^category-/, '').replace(/-/g, ' ')
+            .replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+    }
+}
+
+// Status values and progress messages come from the updater / rpcd as English
+// literals. Translate the known ones, keep unknown text as-is.
+function domainStatusLabel(status) {
+    switch (status) {
+    case 'OK': return _('OK');
+    case 'RUNNING': return _('Running…');
+    case 'FAILED': return _('Failed');
+    case 'NOT UPDATED': return _('Not updated');
+    default: return status;
+    }
+}
+
+function domainMessageLabel(msg) {
+    if (!msg) return '';
+    switch (msg) {
+    case 'update successful': return _('Update successful.');
+    case 'update in progress': return _('Update in progress…');
+    case 'No update has completed yet.': return _('No update has completed yet.');
+    case 'Update was interrupted (service restart or error). Run it again.':
+        return _('Update was interrupted (service restart or error). Run it again.');
+    }
+    var m = String(msg).match(/^update aborted \(rc=(\d+), e\.g\. service restart or error\)$/);
+    if (m) return _('Update aborted (rc=%s, e.g. service restart or error)').format(m[1]);
+    return msg;
+}
+
 return view.extend({
     render: function() {
         // Phone layout: keep the storage table usable instead of letting it squeeze the
@@ -52,7 +99,7 @@ return view.extend({
         return uci.load('trafficchart').then(migrateLegacyPersist).catch(function() {}).then(function() {
             return getDomainGroups().catch(function() { return { groups: [], available: false }; });
         }).then(function(groupData) {
-        m = new form.Map('trafficchart', _('Traffic Chart Settings'),
+        m = new form.Map('trafficchart', _('Traffic Monitor Settings'),
             _('Settings for the traffic-chart aggregator (trafficchart-agg). ' +
               'Saving restarts the aggregator (cumulative totals reset, the history survives).'));
 
@@ -79,12 +126,10 @@ return view.extend({
         var groupNames = groupData && Array.isArray(groupData.groups) ? groupData.groups : [];
         groupNames = groupNames.filter(function(group, index, all) { return all.indexOf(group) === index; }).sort();
         groupNames.forEach(function(group) {
-            var label = group.replace(/^category-/, '').replace(/-/g, ' ');
-            label = label.replace(/\b\w/g, function(c) { return c.toUpperCase(); });
-            o.value(group, label);
+            o.value(group, v2flyGroupLabel(group));
         });
         if (!groupNames.length) {
-            o.value('category-porn', _('Pornography — fallback; update database to load available groups'));
+            o.value('category-porn', _('Adult content — fallback; update database to load available groups'));
             o.description = _('The group list is not available yet. Run “Update now” below to download the v2fly database and populate this selector.');
         }
         o.value('none', _('No warning groups — disable group warnings'));
@@ -253,9 +298,7 @@ return view.extend({
                         if (select.options[j].selected) selected[select.options[j].value] = true;
                     while (select.options.length) select.remove(0);
                     groups.forEach(function(group) {
-                        var label = group.replace(/^category-/, '').replace(/-/g, ' ')
-                            .replace(/\b\w/g, function(c) { return c.toUpperCase(); });
-                        var option = new Option(label, group);
+                        var option = new Option(v2flyGroupLabel(group), group);
                         option.selected = !!selected[group];
                         select.add(option);
                     });
@@ -298,8 +341,8 @@ return view.extend({
                 var previous = Number(st && st.previous_rules || 0);
                 el.innerHTML = '';
                 el.appendChild(E('div', { 'style': 'font-weight:bold; margin-bottom:0.35em;' }, [
-                    E('span', { 'class': 'label ' + cls }, status),
-                    ' ', st && st.message ? st.message : ''
+                    E('span', { 'class': 'label ' + cls }, domainStatusLabel(status)),
+                    ' ', st && st.message ? domainMessageLabel(st.message) : ''
                 ]));
                 el.appendChild(E('div', {}, _('Entries: ') + rules));
                 el.appendChild(E('div', {}, _('Changed: ') + changed + (previous ? ' (' + previous + ' → ' + rules + ')' : '')));

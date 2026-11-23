@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.2.0-r5
+- **Menu moved under Services.** The package now registers `admin/services/traffic-chart`
+  (`Traffic Monitor` / 流量监控) with the two children `Traffic Charts` (流量图表) and
+  `Settings` (设置), instead of a top-level entry named `traffic-chart`.
+- **Every device gets its own row.** The device view reserves `ATTR_MAX_DEVICES` (64) slots and
+  no longer folds the tail into an “Other” bucket, so all devices reported by the collector are
+  listed and drawn as separate donut segments. Applications and destinations keep the 22-row view.
+- **V2Fly warning groups are labelled in Chinese.** `category-*` names are mapped to readable
+  labels (`category-porn` → 成人内容 / Adult content, `category-ads-all` → 广告（全部列表）, …);
+  unknown categories still fall back to a title-cased name. The blunt literal translation
+  “色情” is gone from both the selector and the fallback option.
+- **Remaining English UI strings translated:** legend `Total … packets`, `total: x%`, `via …`,
+  the link-rate line (`%s of %s Mbit/s configured`), shaper diagnostics (`tc_diag`), the domain
+  database status/messages, and the rpcd “aggregator not running / empty / unreadable / stale”
+  errors.
+- Menu titles, page headings and the settings map title now use “Traffic Monitor” consistently.
+- No dependency or packaging changes versus 1.2.0-r4.
+
 ## 1.2.0-r4
 - **Legend lists are forced to one entry per row on phones.** The r1–r3 builds relied on
   `@media (max-width: 760px)` to collapse the legend grid; on Android browsers that lay the page

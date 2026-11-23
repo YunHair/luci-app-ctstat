@@ -11,10 +11,10 @@ OpenWrt LuCI 实时流量图表：按**应用 / 设备 / 目标地址**统计流
 | 项目 | 上游 1.1.0-r21 | 本 fork 1.2.0 |
 |---|---|---|
 | 防火墙 | 依赖里没有明确声明，文档仍提到 iptables | **纯 fw4**：硬依赖 `firewall4` + `nftables`，安装时检测 `/sbin/fw4`，不再有任何 fw3 / iptables 依赖或调用 |
-| 主菜单 | `网络 → Traffic Chart`，设置页是隐藏菜单 | **一个顶级菜单 `traffic-chart`**，内含 `Charts`（图表）和 `Settings`（设置）两个子菜单 |
+| 主菜单 | `网络 → Traffic Chart`，设置页是隐藏菜单 | **`服务 → 流量监控`**，内含 `流量图表` 和 `设置` 两个子菜单 |
 | 手机显示 | 图例两列、流量表 7 列，手机上拥挤 | 手机上**每个项目独占一行**（列模板由 JS 直接写成内联样式，不依赖媒体查询）：圆环与图例上下排列、图例单列、标签栏横向滚动、工具栏整行按钮、最繁忙连接改为每条一张卡片 |
 | 翻译 | 无 | 新增简体中文、繁体中文翻译包（`luci-i18n-traffic-chart-zh-cn` / `zh-tw`） |
-| 版本 | 1.1.0-r21 | 1.2.0-r4，架构 `all` |
+| 版本 | 1.1.0-r21 | 1.2.0-r5，架构 `all` |
 
 > 上游代码本身已经用 nftables（`nss-trafficchart.qos` 写 `inet qos_custom` 表），并不存在 iptables 规则生成逻辑。
 > 本 fork 做的是把 fw3 时代的残留（依赖声明、文档表述、安装环境假设）彻底清掉，并从打包层面强制 fw4。
@@ -34,8 +34,8 @@ OpenWrt LuCI 实时流量图表：按**应用 / 设备 / 目标地址**统计流
 
 ```sh
 opkg update
-opkg install luci-app-traffic-chart_1.2.0-r4_all.ipk
-opkg install luci-i18n-traffic-chart-zh-cn_1.2.0-r4_all.ipk   # 中文界面（可选）
+opkg install luci-app-traffic-chart_1.2.0-r5_all.ipk
+opkg install luci-i18n-traffic-chart-zh-cn_1.2.0-r5_all.ipk   # 中文界面（可选）
 ```
 
 安装后 postinst 会启用并启动 `trafficchart` 服务、重载 rpcd；刷新 LuCI 即可看到新菜单。
@@ -47,13 +47,16 @@ opkg install luci-i18n-traffic-chart-zh-cn_1.2.0-r4_all.ipk   # 中文界面（�
 ## 菜单结构
 
 ```
-traffic-chart
-├── Charts     图表：应用 / 设备 / 目标 / 连接 / 历史
-└── Settings   设置：采集、DNS、告警、历史存储、SQM 分类器、内存守护
+服务 (Services)
+└── 流量监控 (Traffic Monitor)
+    ├── 流量图表  应用 / 设备 / 目标 / 连接 / 历史
+    └── 设置      采集、DNS、告警、历史存储、SQM 分类器、内存守护
 ```
 
-- `Charts` 需要只读 ACL `luci-app-traffic-chart`。
-- `Settings` 需要管理 ACL `luci-app-traffic-chart-admin`（可重启服务、清空历史、更新域名库）。
+- `流量图表` 需要只读 ACL `luci-app-traffic-chart`。
+- `设置` 需要管理 ACL `luci-app-traffic-chart-admin`（可重启服务、清空历史、更新域名库）。
+- `设备` 视图为每台设备单独分配一行和一个圆环扇区（最多 64 台，与聚合器的 `ATTR_MAX_DEVICES`
+  一致），不会把尾部设备折叠成“其他”。
 
 ## 手机访问
 

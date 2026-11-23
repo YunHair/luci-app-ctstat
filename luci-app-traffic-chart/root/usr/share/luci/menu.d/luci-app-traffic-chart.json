@@ -1,7 +1,7 @@
 {
-    "admin/traffic-chart": {
-        "title": "traffic-chart",
-        "order": 55,
+    "admin/services/traffic-chart": {
+        "title": "Traffic Monitor",
+        "order": 60,
         "action": {
             "type": "firstchild"
         },
@@ -11,8 +11,8 @@
             ]
         }
     },
-    "admin/traffic-chart/chart": {
-        "title": "Charts",
+    "admin/services/traffic-chart/chart": {
+        "title": "Traffic Charts",
         "order": 10,
         "action": {
             "type": "view",
@@ -24,7 +24,7 @@
             ]
         }
     },
-    "admin/traffic-chart/settings": {
+    "admin/services/traffic-chart/settings": {
         "title": "Settings",
         "order": 20,
         "action": {

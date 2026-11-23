@@ -125,6 +125,49 @@ function phoneLayout() {
     }
 }
 
+// rpcd returns a handful of English sentences for the "no data" path. Translate
+// the known ones so the red status line stays readable on a Chinese UI.
+function localizeBackendError(msg) {
+    if (!msg) return '';
+    msg = String(msg);
+    var m;
+    if (msg === 'aggregator not running - /etc/init.d/trafficchart start')
+        return _('The aggregator is not running — start it with /etc/init.d/trafficchart start');
+    if (msg === 'aggregator file empty')
+        return _('The aggregator data file is empty — it is still starting up');
+    if ((m = msg.match(/^aggregator data (unreadable|stale) - \/etc\/init\.d\/trafficchart restart$/)))
+        return (m[1] === 'unreadable')
+            ? _('Aggregator data is unreadable — restart it with /etc/init.d/trafficchart restart')
+            : _('Aggregator data is stale — restart it with /etc/init.d/trafficchart restart');
+    return msg;
+}
+
+// The collector reports shaper-detection fallbacks as English sentences in
+// `tc_diag` (see trafficchart-common). Translate the known variants so the
+// status line above the chart is not half English; anything unknown is shown
+// unchanged rather than being hidden.
+function localizeTcDiag(text) {
+    if (!text) return '';
+    text = String(text);
+    var tcMissingText = 'tc is not installed (tc-tiny / tc-full), using sysfs counters';
+    if (text === tcMissingText) return _(tcMissingText);
+    var suffix = '; ' + tcMissingText;
+    var tcMissing = false;
+    if (text.slice(-suffix.length) === suffix) {
+        tcMissing = true;
+        text = text.slice(0, -suffix.length);
+    }
+    var m, out = text;
+    if ((m = text.match(/^no shaper found - using raw counters of (\S+) \(no configured rate\)$/)))
+        out = _('No shaper found — using raw counters of %s (no configured rate)').format(m[1]);
+    else if ((m = text.match(/^upload shaper found on (\S+); download uses raw counters unless a download device is detected$/)))
+        out = _('Upload shaper found on %s; download uses raw counters unless a download device is detected').format(m[1]);
+    else if (text === 'no shaper and no WAN device found - set option wan_dev in Traffic Chart Settings')
+        out = _('No shaper and no WAN device found — set option wan_dev in Traffic Chart Settings');
+    if (tcMissing) out += '; ' + _(tcMissingText);
+    return out;
+}
+
 return view.extend({
     load: function() {
         return Promise.all([ canCall('restart'), canCall('reset_history'), uci.load('trafficchart') ]).then(function(result) {
@@ -422,14 +465,14 @@ return view.extend({
 
                 var sigmaBytesEl = E('span', { style: 'color:var(--qos-text);' }, '0 B');
                 var sigmaPacketsEl = E('span', { style: 'color:var(--qos-text);' }, '0');
-                var sigmaSuffixWordEl = E('span', { style: 'color:var(--qos-text);' }, ' packets');
-                var sigmaSuffixTimeEl = E('span', {}, ' (since start)');
+                var sigmaSuffixWordEl = E('span', { style: 'color:var(--qos-text);' }, ' ' + _('packets'));
+                var sigmaSuffixTimeEl = E('span', {}, ' (' + _('since start') + ')');
                 var sigmaEl = E('span', {
                     style: 'white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; flex:1 1 auto;'
-                }, [ E('span', { style: 'color:var(--qos-text);' }, 'Total '), sigmaBytesEl, ' - ', sigmaPacketsEl, sigmaSuffixWordEl, sigmaSuffixTimeEl ]);
+                }, [ E('span', { style: 'color:var(--qos-text);' }, _('Total') + ' '), sigmaBytesEl, ' - ', sigmaPacketsEl, sigmaSuffixWordEl, sigmaSuffixTimeEl ]);
                 var totalPctEl = E('span', {
                     style: 'min-width:58px; text-align:right; display:inline-block; flex-shrink:0;'
-                }, 'total: 0.0%');
+                }, _('total') + ': 0.0%');
                 refs.classes[cls].livePct = liveTextEl;
                 refs.classes[cls].liveBar = liveBarEl;
                 refs.classes[cls].sigma = sigmaEl;
@@ -604,7 +647,7 @@ return view.extend({
                 }).length;
                 activeCountEl.textContent = _('%s (%d active)').format(noun, activeClassCount);
 
-                var sourceTxt = ifaceSourceName ? ' [via ' + ifaceSourceName + ']' : '';
+                var sourceTxt = ifaceSourceName ? ' [' + _('via') + ' ' + ifaceSourceName + ']' : '';
                 var configuredMbit = (configuredKbit || 0) / 1000;
                 var configuredBps = (configuredKbit || 0) * 1000;
                 var totalPct = 0;
@@ -616,10 +659,10 @@ return view.extend({
                     var ifaceMbit = ifaceRateBps * 8 / 1e6;
                     if (configuredMbit > 0) {
                         totalPct = Math.min(100, (ifaceMbit / configuredMbit) * 100);
-                        linkStatsText.textContent = formatRate(ifaceRateBps * 8) + ' of ' + configuredMbit.toFixed(0) + ' Mbit/s configured (' + totalPct.toFixed(1) + '%)' + sourceTxt;
+                        linkStatsText.textContent = _('%s of %s Mbit/s configured').format(formatRate(ifaceRateBps * 8), configuredMbit.toFixed(0)) + ' (' + totalPct.toFixed(1) + '%)' + sourceTxt;
                     } else {
                         linkStatsText.textContent = formatRate(ifaceRateBps * 8) +
-                            (tcDiagText ? ' (' + tcDiagText + ')' : ' (configured SQM bandwidth not found)') + sourceTxt;
+                            (tcDiagText ? ' (' + tcDiagText + ')' : ' (' + _('configured SQM bandwidth not found') + ')') + sourceTxt;
                     }
                 }
                 linkStatsText.title = tcDiagText || '';
@@ -648,7 +691,7 @@ return view.extend({
                     refs.classes[cls].sigmaSuffixTime.textContent = ' (' + (baselineLabel || _('since start')) + ')';
                     refs.classes[cls].sigma.title = _('Total %s - %s packets (%s)')
                         .format(formatBytes(classBytes[cls]), formatCount(classPackets[cls]), baselineLabel || _('since start'));
-                    refs.classes[cls].totalPct.textContent = 'total: ' + tPct + '%';
+                    refs.classes[cls].totalPct.textContent = _('total') + ': ' + tPct + '%';
 
                     lastValues.classes[cls] = { pct: livePct + '%' };
                     refs.classes[cls].rowEl.style.display = classBytes[cls] > 0 ? '' : 'none';
@@ -782,11 +825,15 @@ return view.extend({
         }
 
         var MAX_ROWS = 22;
+        // Devices are never folded into an "Other" bucket: the collector caps its device
+        // table at ATTR_MAX_DEVICES (64 by default), so reserve that many slots and every
+        // device the backend knows about gets its own row and donut segment.
+        var MAX_DEVICE_ROWS = 64;
         var appsView = makeSlotView(MAX_ROWS - 1, _('Applications'),
             function(name) { return name; },
             function(n) { return _('Other (%d applications)').format(n); },
             function(e) { return (e.top && e.top.length) ? e.top : null; }, _('Top destinations'));
-        var devicesView = makeSlotView(MAX_ROWS - 1, _('Devices'),
+        var devicesView = makeSlotView(MAX_DEVICE_ROWS, _('Devices'),
             function(key, e) {
                 if (key === '(other)' && e.count) return _('Other (%d devices)').format(e.count);
                 var nm = e.name || key;
@@ -1092,7 +1139,7 @@ return view.extend({
                 var p = v.persist, out = [];
                 if (!p) return out;
                 if (p.state === 'off')
-                    return [ _('Persistence is off: the history is kept in RAM only and is lost on reboot. Set a storage path under Network - Traffic Chart Settings.') ];
+                    return [ _('Persistence is off: the history is kept in RAM only and is lost on reboot. Set a storage path under Services - Traffic Monitor - Settings.') ];
                 (p.targets || []).forEach(function(t) {
                     var pend = t.pending ? ', ' + _('%d buckets not written yet').format(t.pending) : '';
                     var scope = (t.tiers && t.tiers !== '5m,1h,1d') ? ' (' + t.tiers + ')' : '';
@@ -2371,7 +2418,7 @@ return view.extend({
         });
 
         var m = E('div', { class: 'cbi-map' }, [
-            E('h2', {}, _('Traffic Chart')),
+            E('h2', {}, _('Traffic Monitor')),
             E('div', { class: 'cbi-section' }, [ container ])
         ]);
 
@@ -2560,7 +2607,7 @@ return view.extend({
                     if (!haveRenderedOnce) {
                         statusEl.style.color = 'red';
                         statusEl.textContent = data && data.error
-                            ? _('Error: %s').format(data.error)
+                            ? _('Error: %s').format(localizeBackendError(data.error))
                             : _('Error: No data received. Is the trafficchart service running (/etc/init.d/trafficchart start)?');
                         applyServiceState();
                     } else {
@@ -2598,7 +2645,7 @@ return view.extend({
                 shaperUpdate(shaperEntries(data), dt);
                 wanUpdate(data.wan, dt);
                 lastData = data;
-                tcDiagText = data.tc_diag || '';
+                tcDiagText = localizeTcDiag(data.tc_diag);
                 histView.setPersist(data.persist || null);
                 histView.setSqm(sqmDownloadKbit, sqmUploadKbit);
                 histView.setShaper(shaperEntries(data).length > 0);

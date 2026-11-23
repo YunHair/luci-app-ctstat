@@ -522,14 +522,8 @@ msgstr "積壓峰值"
 msgid "Percentages refer to the configured SQM rate."
 msgstr "百分比相對於配置的 SQM 速率。"
 
-msgid "Persistence is off: the history is kept in RAM only and is lost on reboot. Set a storage path under Network - Traffic Chart Settings."
-msgstr "持久化未啟用：歷史只儲存在記憶體中，重啟後丟失。請在 Network - Traffic Chart Settings 中設定儲存路徑。"
-
 msgid "Poll interval"
 msgstr "輪詢間隔"
-
-msgid "Pornography — fallback; update database to load available groups"
-msgstr "色情 — 回退項；更新資料庫以載入可用分組"
 
 msgid "Port"
 msgstr "埠"
@@ -679,7 +673,7 @@ msgid "The History tab keeps 5 minute buckets (24 hours), hourly buckets (week, 
 msgstr "歷史頁保留 5 分鐘分桶（24 小時）、每小時分桶（周、月）和每日分桶（年）。沒有儲存路徑時只儲存在記憶體中，重啟後丟失。"
 
 msgid "The Traffic Chart service is disabled in the settings, so no data is collected."
-msgstr "設定中已關閉 Traffic Chart 服務，因此不會採集資料。"
+msgstr "設定中已關閉流量監控服務，因此不會採集資料。"
 
 msgid "The group list is not available yet. Run “Update now” below to download the v2fly database and populate this selector."
 msgstr "分組列表尚不可用。請點選下面的“立即更新”下載 v2fly 資料庫以填充此選擇列表。"
@@ -721,7 +715,7 @@ msgid "Traffic Chart Settings"
 msgstr "流量圖表設定"
 
 msgid "Traffic Chart is disabled."
-msgstr "流量圖表已禁用。"
+msgstr "流量監控已禁用。"
 
 msgid "Tries to attribute the router's own WAN traffic (e.g. a stream proxy) to the LAN device it served, instead of showing it generically as \"Router\"."
 msgstr "嘗試把路由器自身的 WAN 流量（例如流媒體代理）歸屬到它所服務的區域網裝置，而不是籠統顯示為“路由器”。"
@@ -886,7 +880,7 @@ msgid "since start"
 msgstr "自啟動以來"
 
 msgid "total"
-msgstr "總計"
+msgstr "佔比"
 
 msgid "unknown error"
 msgstr "未知錯誤"
@@ -905,3 +899,114 @@ msgstr "⚠ %d 秒未更新（上次成功讀取：%s）- 正在自動重試..."
 
 msgid "Charts"
 msgstr "圖表"
+
+msgid "Traffic Monitor"
+msgstr "流量監控"
+
+msgid "Traffic Charts"
+msgstr "流量圖表"
+
+msgid "Adult content"
+msgstr "成人內容"
+
+msgid "Adult content — fallback; update database to load available groups"
+msgstr "成人內容 — 回退項；更新資料庫以載入可用分組"
+
+msgid "Advertising"
+msgstr "廣告"
+
+msgid "Advertising (all lists)"
+msgstr "廣告（全部列表）"
+
+msgid "AI chat (outside China)"
+msgstr "AI 對話（中國大陸以外）"
+
+msgid "Cryptocurrency"
+msgstr "加密貨幣"
+
+msgid "Games"
+msgstr "遊戲"
+
+msgid "Media"
+msgstr "影音媒體"
+
+msgid "Scholar"
+msgstr "學術"
+
+msgid "Social"
+msgstr "社交"
+
+msgid "Speed test"
+msgstr "測速"
+
+msgid "OK"
+msgstr "成功"
+
+msgid "Running…"
+msgstr "進行中…"
+
+msgid "Failed"
+msgstr "失敗"
+
+msgid "Not updated"
+msgstr "未更新"
+
+msgid "Update successful."
+msgstr "更新成功。"
+
+msgid "Update in progress…"
+msgstr "正在更新…"
+
+msgid "No update has completed yet."
+msgstr "尚未完成過更新。"
+
+msgid "Update was interrupted (service restart or error). Run it again."
+msgstr "更新被中斷（服務重啟或出錯），請重新執行。"
+
+msgid "Update aborted (rc=%s, e.g. service restart or error)"
+msgstr "更新中止（rc=%s，例如服務重啟或出錯）"
+
+msgid "No shaper found — using raw counters of %s (no configured rate)"
+msgstr "未找到整形器 — 使用 %s 的原始計數器（未配置速率）"
+
+msgid "Upload shaper found on %s; download uses raw counters unless a download device is detected"
+msgstr "在 %s 上找到上傳整形器；下載使用原始計數器，除非檢測到下載裝置"
+
+msgid "No shaper and no WAN device found — set option wan_dev in Traffic Chart Settings"
+msgstr "未找到整形器和 WAN 裝置 — 請在流量圖表設定中配置 wan_dev"
+
+msgid "tc is not installed (tc-tiny / tc-full), using sysfs counters"
+msgstr "未安裝 tc（tc-tiny / tc-full），改用 sysfs 計數器"
+
+msgid "Traffic Monitor Settings"
+msgstr "流量監控設定"
+
+msgid "%s of %s Mbit/s configured"
+msgstr "%s / 已配置 %s Mbit/s"
+
+msgid "Total"
+msgstr "總計"
+
+msgid "packets"
+msgstr "個資料包"
+
+msgid "via"
+msgstr "經由"
+
+msgid "configured SQM bandwidth not found"
+msgstr "未找到已配置的 SQM 頻寬"
+
+msgid "The aggregator is not running — start it with /etc/init.d/trafficchart start"
+msgstr "聚合服務未執行 — 請執行 /etc/init.d/trafficchart start 啟動"
+
+msgid "The aggregator data file is empty — it is still starting up"
+msgstr "聚合資料檔案為空 — 服務仍在啟動中"
+
+msgid "Aggregator data is unreadable — restart it with /etc/init.d/trafficchart restart"
+msgstr "聚合資料無法讀取 — 請執行 /etc/init.d/trafficchart restart 重啟"
+
+msgid "Aggregator data is stale — restart it with /etc/init.d/trafficchart restart"
+msgstr "聚合資料已過期 — 請執行 /etc/init.d/trafficchart restart 重啟"
+
+msgid "Persistence is off: the history is kept in RAM only and is lost on reboot. Set a storage path under Services - Traffic Monitor - Settings."
+msgstr "持久化未啟用：歷史只儲存在記憶體中，重啟後丟失。請在「服務 → 流量監控 → 設定」中設定儲存路徑。"
