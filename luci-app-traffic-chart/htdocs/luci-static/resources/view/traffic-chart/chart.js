@@ -101,6 +101,30 @@ function svgEl(tag, attrs) {
 
 var previousCleanup = null;
 
+// Phones must show one legend entry per row. A pure `max-width` media query is not
+// reliable here: some Android browsers / "desktop site" modes lay the page out at
+// 980 px and scale it down, so the query never matches even though the screen is
+// narrow. Touch capability plus the physical screen width is used as a second,
+// width-independent signal, and the resulting column template is written inline
+// (see applyLegendLayout) so it cannot be lost to CSS ordering or caching.
+var PHONE_MAX_CSS = 760;
+var TOUCH_MAX_CSS = 1024;
+
+function phoneLayout() {
+    try {
+        var w = window.innerWidth || document.documentElement.clientWidth || 0;
+        var sw = (window.screen && window.screen.width) || 0;
+        var coarse = window.matchMedia ? window.matchMedia('(pointer: coarse)').matches : false;
+        var touch = (navigator.maxTouchPoints || 0) > 0;
+        if (w && w <= PHONE_MAX_CSS) return true;
+        if (w && coarse && w <= TOUCH_MAX_CSS) return true;
+        if (w && touch && sw && Math.min(w, sw) <= TOUCH_MAX_CSS) return true;
+        return false;
+    } catch (e) {
+        return false;
+    }
+}
+
 return view.extend({
     load: function() {
         return Promise.all([ canCall('restart'), canCall('reset_history'), uci.load('trafficchart') ]).then(function(result) {
@@ -171,8 +195,9 @@ return view.extend({
                 '  .qos-panel-title { font-size: 14px; }',
                 '  .qos-card { flex-direction: column; align-items: stretch; gap: 4px; }',
                 '  .qos-donut-wrap { margin: 0 auto; max-width: 270px !important; flex: 0 0 auto !important; align-self: center; }',
-                '  .qos-legend-grid { grid-template-columns: 1fr !important; gap: 0 !important; }',
-                '  .qos-legend-row { padding: 6px 2px !important; }',
+                '  #qos_container .qos-legend-grid { grid-template-columns: minmax(0, 1fr) !important; gap: 0 !important; }',
+                '  #qos_container .qos-legend-grid > div { min-width: 0; }',
+                '  .qos-legend-row { padding: 7px 2px !important; }',
                 '  .qos-tabs { flex-wrap: nowrap !important; overflow-x: auto; -webkit-overflow-scrolling: touch;' +
                 '    scrollbar-width: none; max-width: 100%; }',
                 '  .qos-tabs::-webkit-scrollbar { display: none; }',
@@ -199,10 +224,23 @@ return view.extend({
                 '  #qos_flows_table td.td::before { content: attr(data-label); color: var(--qos-text-muted);' +
                 '    font-weight: 600; flex: 0 0 auto; text-align: left; font-size: 11px; }',
                 '}',
+                // Touch devices that report a wide layout viewport (980 px "desktop site"
+                // mode) never match the query above, so the same single-column rules are
+                // repeated for coarse pointers. One legend entry per row, always.
+                '@media (pointer: coarse) and (max-width: 1024px) {',
+                '  #qos_container .qos-legend-grid { grid-template-columns: minmax(0, 1fr) !important; gap: 0 !important; }',
+                '  #qos_container .qos-legend-grid > div { min-width: 0; }',
+                '  .qos-legend-row { padding: 8px 2px !important; gap: 10px !important; }',
+                '  .qos-card { flex-direction: column; align-items: stretch; gap: 4px; }',
+                '  .qos-donut-wrap { margin: 0 auto; max-width: 270px !important; flex: 0 0 auto !important; align-self: center; }',
+                '  .qos-panels { flex-direction: column; align-items: stretch; gap: 16px; }',
+                '}',
                 '@media (max-width: 420px) {',
                 '  .qos-donut-wrap { max-width: 215px; }',
                 '  #qos_container { padding: 10px 8px !important; }',
-                '}'
+                '}',
+                '#qos_container { max-width: 100%; box-sizing: border-box; }',
+                '#qos_container .qos-legend-grid { min-width: 0; max-width: 100%; }'
             ].join('\n');
             document.head.appendChild(mobileStyle);
         }
@@ -469,6 +507,22 @@ return view.extend({
                 class: 'qos-legend-grid',
                 style: 'display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:0 32px; align-content:start;'
             }, legendChildren);
+
+            // The column template is written inline instead of relying on a media query,
+            // so a phone always gets exactly one legend entry per row even when the
+            // browser reports a 980 px layout viewport or a stale stylesheet is cached.
+            function applyLegendLayout() {
+                var single = phoneLayout();
+                legendGrid.style.gridTemplateColumns = single ? 'minmax(0, 1fr)' : 'repeat(auto-fit, minmax(250px, 1fr))';
+                legendGrid.style.columnGap = single ? '0' : '32px';
+            }
+            applyLegendLayout();
+            window.addEventListener('resize', applyLegendLayout);
+            window.addEventListener('orientationchange', applyLegendLayout);
+            cleanupFns.push(function() {
+                window.removeEventListener('resize', applyLegendLayout);
+                window.removeEventListener('orientationchange', applyLegendLayout);
+            });
 
             var card = E('div', { class: 'qos-card' }, [
                 E('div', {

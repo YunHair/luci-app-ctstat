@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.2.0-r4
+- **Legend lists are forced to one entry per row on phones.** The r1–r3 builds relied on
+  `@media (max-width: 760px)` to collapse the legend grid; on Android browsers that lay the page
+  out at a 980 px "desktop site" viewport (and on WebViews that ignore the media query), the
+  applications / devices / destinations lists still rendered two entries side by side.
+  - The column template is now written **inline by JavaScript** (`minmax(0, 1fr)` on phones,
+    `repeat(auto-fit, minmax(250px, 1fr))` on desktop), so CSS ordering or a stale stylesheet can
+    no longer leave two entries on one line. It is re-evaluated on `resize` / `orientationchange`.
+  - Phone detection no longer depends on the viewport width alone: `(pointer: coarse)` plus
+    `screen.width` / `maxTouchPoints` is used as a width-independent signal (up to 1024 px).
+  - Added the same single-column rules under `@media (pointer: coarse) and (max-width: 1024px)`
+    as a second line of defence.
+  - Applied to all three live views (Applications, Devices, Destinations), which share the
+    same panel builder.
+- No dependency or packaging changes versus 1.2.0-r3.
+
 ## 1.2.0-r3
 - **Removed the transitive iptables dependency.** The package hard-depended on `sqm-scripts`,
   which itself depends on `iptables`, `iptables-mod-ipopt` and `kmod-sched-cake`; the `tc`
