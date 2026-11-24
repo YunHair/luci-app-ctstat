@@ -13,7 +13,8 @@
   - moves `/etc/config/trafficchart` to `/etc/config/ctstat` (rewriting the
     section type) and keeps a backup when both files exist,
   - moves `/etc/trafficchart-*` (domain database, history) to `/etc/ctstat-*`
-    and rewrites absolute `persist_target` paths,
+    and follows `/etc/trafficchart-data` storage targets to `/etc/ctstat-data`
+    (user paths under `/mnt` keep their name so the stored history is not lost),
   - removes the old menu, ACL, view directory, sysctl file and libexec helpers so
     no duplicate menu entry or second aggregator survives.
 - **Service-database downloads work behind a filtered network.** The updater used

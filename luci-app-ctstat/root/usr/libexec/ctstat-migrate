@@ -66,14 +66,18 @@ for old in /etc/trafficchart-data \
     fi
 done
 
-# History targets may point into the old directory by absolute path.
+# The internal-flash store moved from /etc/trafficchart-data to /etc/ctstat-data,
+# so a target pointing there has to follow. User-chosen paths below /mnt, /media
+# or /tmp/mnt are directory *names*: rewriting them would point at a directory
+# that does not exist and silently drop the stored history, so they stay as-is.
 if command -v uci >/dev/null 2>&1 && [ -f /etc/config/ctstat ]; then
     uci_changed=0
     for sec in $(uci -q show ctstat 2>/dev/null | sed -n 's/^ctstat\.\([^.=]*\)\.path=.*/\1/p'); do
         path=$(uci -q get "ctstat.$sec.path" 2>/dev/null)
         case "$path" in
-            *trafficchart*)
-                uci -q set "ctstat.$sec.path=$(printf '%s' "$path" | sed 's/trafficchart/ctstat/g')" && uci_changed=1
+            /etc/trafficchart-data|/etc/trafficchart-data/*)
+                new_path=$(printf '%s' "$path" | sed 's#^/etc/trafficchart-data#/etc/ctstat-data#')
+                uci -q set "ctstat.$sec.path=$new_path" && uci_changed=1
                 ;;
         esac
     done

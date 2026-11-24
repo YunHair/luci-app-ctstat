@@ -59,6 +59,7 @@ opkg 记录了依赖关系，先删主包会提示 `is depended upon by luci-i18
 
 即使不卸载，`ctstat-migrate` 也会在 postinst 阶段停用旧服务、迁移
 `/etc/config/trafficchart` → `/etc/config/ctstat`、`/etc/trafficchart-*` → `/etc/ctstat-*`，
+把指向内置闪存的存储路径改为 `/etc/ctstat-data`（`/mnt` 下的自定义路径名保持不变，避免找不到目录而丢历史），
 并删除旧的菜单、视图和 libexec 脚本，避免出现重复菜单与两个聚合进程。之后仍建议执行一次
 `opkg remove luci-app-traffic-chart` 让 opkg 数据库保持一致。
 
