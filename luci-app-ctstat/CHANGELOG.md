@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.0-r1 — cleaner chart toolbar
+- Removed the gear **Settings** button from the chart toolbar (its URL returned 404).
+- Export JSON / Export CSV buttons now match the active theme's tab height and vertical offset.
+
 ## 1.4.0-r2 — fix packaged shell scripts
 - Normalise all packaged files to LF line endings. The r1 packages were built on
   Windows with CRLF, so `/usr/libexec/rpcd/luci.ctstat` had a `#!/bin/sh\r` shebang

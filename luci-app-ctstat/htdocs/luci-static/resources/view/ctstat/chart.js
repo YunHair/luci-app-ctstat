@@ -2481,16 +2481,10 @@ return view.extend({
             btnJson.addEventListener('click', function(e) { e.stopPropagation(); if (histView.active) histView.exportJson(); else exportJson(); });
             btnCsv.addEventListener('click', function(e) { e.stopPropagation(); if (histView.active) histView.exportCsv(); else exportCsv(); });
             exportTitles();
-            // settings live on their own page (admin ACL only)
             var toolbarBtns = [ btnJson, btnCsv ];
-            if (canRestart)
-                toolbarBtns.push(E('a', {
-                    href: L.url('admin', 'ctstat', 'settings'),
-                    'class': 'btn cbi-button', id: 'qos_settings_link',
-                    style: 'text-decoration:none;', title: _('Settings'), 'aria-label': _('Settings')
-                }, '\u2699 ' + _('Settings')));
+            var toolbarActions = E('div', { class: 'qos-toolbar-actions', style: 'display:flex; gap:6px; margin-bottom:1em;' }, toolbarBtns);
             var toolbar = E('div', { class: 'qos-toolbar', style: 'display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap;' }, [
-                tabs, E('div', { class: 'qos-toolbar-actions', style: 'display:flex; gap:6px; margin-bottom:1em;' }, toolbarBtns) ]);
+                tabs, toolbarActions ]);
 
             var hintText = _('* Note: rates are the mean of the last %d s, measured by the ctstat-agg daemon on its own clock (bytes per application, device and destination from /proc/net/nf_conntrack, application names from netifyd). The link rate comes from the tc qdisc counters read in the same instant. "Not attributed" is what the shaper carries but conntrack does not count (after subtracting the link layer header): e.g. traffic to router services, dropped inbound packets, multicast.').format((data && data.rate && data.rate.win) || 0);
             if (data && data.backend === 'nss')
@@ -2505,6 +2499,22 @@ return view.extend({
             container.appendChild(wanEl);
             container.appendChild(shaperEl);
             container.appendChild(toolbar);
+
+            // Match the export buttons to the height/offset of the tab strip in the active theme.
+            if (tabBtns.length && toolbarBtns.length) {
+                var tabStyle = window.getComputedStyle(tabBtns[0]);
+                var tabHeight = tabBtns[0].getBoundingClientRect().height || parseFloat(tabStyle.height) || 0;
+                if (tabHeight > 0) {
+                    toolbarBtns.forEach(function(btn) {
+                        btn.style.boxSizing = 'border-box';
+                        btn.style.height = tabHeight + 'px';
+                        btn.style.lineHeight = Math.max(0, tabHeight - 2) + 'px';
+                        btn.style.padding = '0 10px';
+                    });
+                    toolbarActions.style.marginTop = (parseFloat(tabStyle.marginTop) || 0) + 'px';
+                }
+            }
+
             container.appendChild(appPanels);
             container.appendChild(devPanels);
             container.appendChild(hostPanels);
