@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.0-r2 — fix packaged shell scripts
+- Normalise all packaged files to LF line endings. The r1 packages were built on
+  Windows with CRLF, so `/usr/libexec/rpcd/luci.ctstat` had a `#!/bin/sh\r` shebang
+  and rpcd failed to register `luci.ctstat` (`Object not found` on the chart page).
+- Same UI changes as r1 (back link and both page headings removed).
+
 ## 1.4.0-r1 — cleaner page headings
 - Removed the “← Charts” back link row from the **Settings** page; navigation stays in the sidebar/menu.
 - Removed the `Traffic Monitor Settings` map heading (`h2`) from the **Settings** page.

@@ -13,9 +13,9 @@ Maintainer: YunHair - License: GPL-2.0-or-later
 
 | Package | Version |
 |---|---|
-| [luci-app-ctstat](luci-app-ctstat/) | 1.4.0-r1 |
-| luci-i18n-ctstat-zh-cn | 1.4.0-r1 |
-| luci-i18n-ctstat-zh-tw | 1.4.0-r1 |
+| [luci-app-ctstat](luci-app-ctstat/) | 1.4.0-r2 |
+| luci-i18n-ctstat-zh-cn | 1.4.0-r2 |
+| luci-i18n-ctstat-zh-tw | 1.4.0-r2 |
 
 Details, settings and troubleshooting: [luci-app-ctstat/README.md](luci-app-ctstat/README.md),
 changes: [CHANGELOG](luci-app-ctstat/CHANGELOG.md).
