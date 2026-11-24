@@ -4,9 +4,7 @@ OpenWrt LuCI 实时流量统计：按**应用 / 设备 / 目标地址**统计流
 
 本仓库是 [m0g13r/luci-app-traffic-chart](https://github.com/m0g13r/luci-app-traffic-chart) 的 fork：**YunHair/luci-app-ctstat**。1.2.0 及更早版本叫 `luci-app-traffic-chart`，1.3.0 起包名、配置名、服务名、rpcd 对象与 SQM 分类器统一改为 `ctstat`（connection statistics），安装时自动迁移旧设置与历史。当前版本 **1.5.0-r1**，架构 `all`。
 
-|                   |                      |                      |
-| ----------------- | -------------------- | -------------------- |
-| [中文文档](README.md) | [仓库首页](../README.md) | [更新记录](CHANGELOG.md) |
+[更新记录](CHANGELOG.md) | [许可](LICENSE)
 
 ---
 
@@ -16,13 +14,13 @@ OpenWrt LuCI 实时流量统计：按**应用 / 设备 / 目标地址**统计流
 
 ### 1. 流量图表：五个视角
 
-| 标签页    | 内容                                                           |
-| :----- | :----------------------------------------------------------- |
-| **应用** | 按应用（或 `协议/端口`）统计，下载 / 上传各一张圆环图；图例可悬停、点击固定、与圆环联动高亮            |
+| 标签页 | 内容 |
+| :--- | :--- |
+| **应用** | 按应用（或 `协议/端口`）统计，下载 / 上传各一张圆环图；图例可悬停、点击固定、与圆环联动高亮 |
 | **设备** | 按局域网设备统计，同样分上下行；**每台设备独占一行和一个扇区**，不会把长尾设备折叠成「其他」（显示上限 256 台） |
-| **目标** | 按目标 IP / 域名统计，可看到每个目标对应的 top 应用与设备                           |
-| **连接** | 最繁忙的 25 条连接：设备、应用、目标、端口、下载、上传、总量，带速率背景条                      |
-| **历史** | 24 小时 / 周 / 月 / 年曲线，三级精度；支持与上一周期对比、告警标记、JSON / CSV 导出        |
+| **目标** | 按目标 IP / 域名统计，可看到每个目标对应的 top 应用与设备 |
+| **连接** | 最繁忙的 25 条连接：设备、应用、目标、端口、下载、上传、总量，带速率背景条 |
+| **历史** | 24 小时 / 周 / 月 / 年曲线，三级精度；支持与上一周期对比、告警标记、JSON / CSV 导出 |
 
 - 三个「圆环 + 图例」面板共用一套交互：悬停显示明细、点击固定、按颜色联动过滤；数值为最近 `rate_win` 秒的平均速率。
 - 「连接」页单元格带 `data-label`，手机端自动转成一张张卡片。
@@ -59,7 +57,7 @@ ctstat-agg 每 4 秒扫描 /proc/net/nf_conntrack，只累加「本次 - 上次�
 ```
 
 - 流量判定：LAN → 非本地目标、路由器 → WAN、WAN 主动访问 LAN（端口映射 / IPv6 入站）；LAN↔LAN 与 LAN → 路由器不算 WAN 流量。
-- 速率来自同一轮读取的 `tc` qdisc 计数器；`tc` 总量减去 conntrack 已归属量（扣除链路层头部）显示&#x4E3A;**「未归属」**——对应路由器自身服务、组播、被丢弃的入站包等。
+- 速率来自同一轮读取的 `tc` qdisc 计数器；`tc` 总量减去 conntrack 已归属量（扣除链路层头部）显示为**「未归属」**——对应路由器自身服务、组播、被丢弃的入站包等。
 - 不依赖 SQM / qosmate 配置，也不依赖任何包标记、DSCP 或端口清单；整形器从内核 `tc qdisc / filter` 直接探测，支持 `auto` / `nss` / `generic`。
 - 自适应轮询与 `fastpath`：跳过自上次扫描后字节数没变的连接，普通网络下聚合器 CPU 可降到原来的 1/3～1/2，结果完全一致。
 
@@ -150,26 +148,23 @@ opkg install luci-app-ctstat_1.5.0-r1_all.ipk
 
 配置文件 `/etc/config/ctstat` 的 `global` 段，或 LuCI **流量监控 → 设置**。完整列表以界面为准；下表是最常用项。
 
-| 分组     | 选项（默认值）                                                                                                             | 含义                                             |
-| :----- | :------------------------------------------------------------------------------------------------------------------ | :--------------------------------------------- |
-| 采集     | `enabled`=1、`interval`=4、`rate_win`、`backend`=auto、`wan_dev`=auto                                                   | 启停、扫描间隔、速率窗口、整形器后端、WAN 设备                      |
-| 命名     | `apps`=1、`dns_names`=1、`dns_iface`=br-lan、`sock`                                                                    | netifyd 应用名、tcpdump 域名、抓取网卡、netifyd socket     |
-| DNS 归属 | `dns_auto_resolvers`=1、`dns_resolvers`、`dns_any_client`=1                                                           | 从 DHCP 自动发现解析器、补充解析器、复用其他客户端的域名                |
-| 归因     | `attr_totals`=1、`attr_ports`、`attr_skip_ports`、`attr_win`=60、`attr_tol`=0.6、`attr_share`=0.25、`attr_max_devices`=64 | 路由器代理流量回算到设备的过滤与容量参数                           |
-| 告警     | `alert_groups`=category-porn、`alert_keywords`                                                                       | v2fly 分类与自定义关键词，命中处显示 ⚠                        |
-| 服务库    | `domain_auto_update`=1、`domain_update_days`=7、`domain_source`=auto、`domain_url`                                     | 自动更新、更新间隔、下载源（含自定义 URL）                        |
-| 历史     | `hist_sec`=300、`hist_keep`=288、`hist_hour_keep`=744、`hist_day_keep`=400、`hist_detail`=1                             | 三级桶长度与保留量、历史提示详情                               |
-| 存储     | `persist_target` 行（`path` + `tier_5m/1h/1d`）、`persist_sec`=3600、`persist_timeout`=10                                | 多目录镜像持久化、写盘间隔、访问超时                             |
-| 表格     | `app_max`=400、`host_max`=200、`row_keep`=40、`tooltips`=1                                                             | 各表上限、单独列出的行数、详细提示                              |
-| 性能     | `fastpath`=1、`mem_guard`=1、`mem_limit_mb`=48、`l2_overhead`=auto                                                     | 空闲连接跳过、内存守护、链路层头部                              |
-| SQM    | `bulk_bytes`=314572800、`reset_ct_marks`=1、`dns_redirect`=0、`dns_redirect_exclude`、`ttl_fix`=0                       | `nss-ctstat.qos` 的 BULK 阈值、标记重置、DNS 重定向、TTL 规整 |
+| 分组 | 选项（默认值） | 含义 |
+| :--- | :--- | :--- |
+| 采集 | `enabled`=1、`interval`=4、`rate_win`、`backend`=auto、`wan_dev`=auto | 启停、扫描间隔、速率窗口、整形器后端、WAN 设备 |
+| 命名 | `apps`=1、`dns_names`=1、`dns_iface`=br-lan、`sock` | netifyd 应用名、tcpdump 域名、抓取网卡、netifyd socket |
+| DNS 归属 | `dns_auto_resolvers`=1、`dns_resolvers`、`dns_any_client`=1 | 从 DHCP 自动发现解析器、补充解析器、复用其他客户端的域名 |
+| 归因 | `attr_totals`=1、`attr_ports`、`attr_skip_ports`、`attr_win`=60、`attr_tol`=0.6、`attr_share`=0.25、`attr_max_devices`=64 | 路由器代理流量回算到设备的过滤与容量参数 |
+| 告警 | `alert_groups`=category-porn、`alert_keywords` | v2fly 分类与自定义关键词，命中处显示 ⚠ |
+| 服务库 | `domain_auto_update`=1、`domain_update_days`=7、`domain_source`=auto、`domain_url` | 自动更新、更新间隔、下载源（含自定义 URL） |
+| 历史 | `hist_sec`=300、`hist_keep`=288、`hist_hour_keep`=744、`hist_day_keep`=400、`hist_detail`=1 | 三级桶长度与保留量、历史提示详情 |
+| 存储 | `persist_target` 行（`path` + `tier_5m/1h/1d`）、`persist_sec`=3600、`persist_timeout`=10 | 多目录镜像持久化、写盘间隔、访问超时 |
+| 表格 | `app_max`=400、`host_max`=200、`row_keep`=40、`tooltips`=1 | 各表上限、单独列出的行数、详细提示 |
+| 性能 | `fastpath`=1、`mem_guard`=1、`mem_limit_mb`=48、`l2_overhead`=auto | 空闲连接跳过、内存守护、链路层头部 |
+| SQM | `bulk_bytes`=314572800、`reset_ct_marks`=1、`dns_redirect`=0、`dns_redirect_exclude`、`ttl_fix`=0 | `nss-ctstat.qos` 的 BULK 阈值、标记重置、DNS 重定向、TTL 规整 |
 
 ---
 
 ## 五、排障速查
-
-|   |   |
-| - | - |
 
 - **提示聚合器未运行 / 数据过期**：`/etc/init.d/ctstat restart`，然后 `logread | grep ctstat`。
 - **没有应用名**：检查 `socat`、`netifyd` 与 `/etc/netifyd.conf` 的 `listen_path`；没有 netifyd 时仍可用 DNS 抓包得到域名。
