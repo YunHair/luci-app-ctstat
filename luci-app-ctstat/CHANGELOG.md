@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.0-r1 — cleaner page headings
+- Removed the “← Charts” back link row from the **Settings** page; navigation stays in the sidebar/menu.
+- Removed the `Traffic Monitor Settings` map heading (`h2`) from the **Settings** page.
+- Removed the `Traffic Monitor` heading (`h2`) from the **Charts** page.
+- No dependency changes versus 1.3.0-r1.
+
 ## 1.3.0-r1 — renamed to luci-app-ctstat
 - **The whole project is now `ctstat`.** Package `luci-app-traffic-chart` →
   `luci-app-ctstat`, translation packages → `luci-i18n-ctstat-*`, repository →

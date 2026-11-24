@@ -13,12 +13,12 @@ Maintainer: YunHair - License: GPL-2.0-or-later
 
 | Package | Version |
 |---|---|
-| [luci-app-traffic-chart](luci-app-traffic-chart/) | 1.2.0-r3 |
-| luci-i18n-traffic-chart-zh-cn | 1.2.0-r3 |
-| luci-i18n-traffic-chart-zh-tw | 1.2.0-r3 |
+| [luci-app-ctstat](luci-app-ctstat/) | 1.4.0-r1 |
+| luci-i18n-ctstat-zh-cn | 1.4.0-r1 |
+| luci-i18n-ctstat-zh-tw | 1.4.0-r1 |
 
-Details, settings and troubleshooting: [luci-app-traffic-chart/README.md](luci-app-traffic-chart/README.md),
-changes: [CHANGELOG](luci-app-traffic-chart/CHANGELOG.md).
+Details, settings and troubleshooting: [luci-app-ctstat/README.md](luci-app-ctstat/README.md),
+changes: [CHANGELOG](luci-app-ctstat/CHANGELOG.md).
 
 ## Use as feed (build system)
 Add to `feeds.conf` (or `feeds.conf.default`):

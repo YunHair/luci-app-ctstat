@@ -2430,7 +2430,6 @@ return view.extend({
         });
 
         var m = E('div', { class: 'cbi-map' }, [
-            E('h2', {}, _('Traffic Monitor')),
             E('div', { class: 'cbi-section' }, [ container ])
         ]);
 

@@ -128,7 +128,7 @@ return view.extend({
         return uci.load('ctstat').then(migrateLegacyPersist).catch(function() {}).then(function() {
             return getDomainGroups().catch(function() { return { groups: [], available: false }; });
         }).then(function(groupData) {
-        m = new form.Map('ctstat', _('Traffic Monitor Settings'),
+        m = new form.Map('ctstat', null,
             _('Settings for the ctstat aggregator (ctstat-agg). ' +
               'Saving restarts the aggregator (cumulative totals reset, the history survives).'));
 
@@ -791,20 +791,7 @@ return view.extend({
         o.depends('mem_guard', '1');
 
         var rendered = m.render();
-        rendered.then(function(node) {
-            // One app, two submenu pages: give the settings page a way back to the charts
-            // without relying on the (on phones collapsed) sidebar.
-            var back = E('div', { class: 'ctstat-back', style: 'margin: 0 0 14px;' }, [
-                E('a', {
-                    'class': 'btn cbi-button',
-                    href: L.url('admin', 'ctstat', 'chart'),
-                    style: 'text-decoration:none;'
-                }, '\u2190 ' + _('Charts'))
-            ]);
-            if (node.firstChild)
-                node.insertBefore(back, node.firstChild);
-            else
-                node.appendChild(back);
+        rendered.then(function() {
             // pollDomainStatus already displays RPC errors in the status field;
             // consume its rejection here to avoid an unhandled Promise rejection.
             pollDomainStatus().catch(function() {});

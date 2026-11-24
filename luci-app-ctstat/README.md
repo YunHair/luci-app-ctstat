@@ -1,4 +1,4 @@
-# luci-app-ctstat 1.3.0（纯 fw4）
+# luci-app-ctstat 1.4.0（纯 fw4）
 
 OpenWrt LuCI 实时流量统计：按**应用 / 设备 / 目标地址**统计流量，显示最繁忙的连接、整形器健康状态
 （丢包、ECN 标记、队列积压）以及历史曲线（24 小时 / 周 / 月 / 年），历史可持久化到 U 盘、SD 卡或内置闪存。
@@ -18,7 +18,7 @@ OpenWrt LuCI 实时流量统计：按**应用 / 设备 / 目标地址**统计流
 | 设备列表 | 尾部设备折叠为“其他” | 每台设备单独一行、单独扇区，槽位数跟随 `attr_max_devices`（默认 64，上限 256） |
 | 服务库更新 | 只连 GitHub release | 官方源 + 4 个公开镜像回退，支持自定义 URL；失败原因按镜像分别报告（DNS / 超时 / TLS / 404），不再一律提示“缺 ca-bundle” |
 | 翻译 | 无 | 简体中文、繁体中文翻译包（`luci-i18n-ctstat-zh-cn` / `zh-tw`） |
-| 版本 | 1.1.0-r21 | 1.3.0-r1，架构 `all` |
+| 版本 | 1.1.0-r21 | 1.4.0-r1，架构 `all` |
 
 > 上游代码本身已经用 nftables（`nss-trafficchart.qos` 写 `inet qos_custom` 表），并不存在 iptables 规则生成逻辑。
 > 本 fork 做的是把 fw3 时代的残留（依赖声明、文档表述、安装环境假设）彻底清掉，并从打包层面强制 fw4。
@@ -38,8 +38,8 @@ OpenWrt LuCI 实时流量统计：按**应用 / 设备 / 目标地址**统计流
 
 ```sh
 opkg update
-opkg install luci-app-ctstat_1.3.0-r1_all.ipk
-opkg install luci-i18n-ctstat-zh-cn_1.3.0-r1_all.ipk   # 中文界面（可选）
+opkg install luci-app-ctstat_1.4.0-r1_all.ipk
+opkg install luci-i18n-ctstat-zh-cn_1.4.0-r1_all.ipk   # 中文界面（可选）
 ```
 
 安装后 postinst 会迁移旧配置、启用并启动 `ctstat` 服务、重载 rpcd；刷新 LuCI 即可看到新菜单。
@@ -51,7 +51,7 @@ opkg install luci-i18n-ctstat-zh-cn_1.3.0-r1_all.ipk   # 中文界面（可选�
 ```sh
 opkg remove luci-i18n-traffic-chart-zh-cn luci-i18n-traffic-chart-zh-tw   # 先删翻译包
 opkg remove luci-app-traffic-chart                                        # 再删主包
-opkg install luci-app-ctstat_1.3.0-r1_all.ipk
+opkg install luci-app-ctstat_1.4.0-r1_all.ipk
 ```
 
 opkg 记录了依赖关系，先删主包会提示 `is depended upon by luci-i18n-traffic-chart-*`；
